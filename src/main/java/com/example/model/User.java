@@ -19,8 +19,20 @@ public class User {
 
     @Column
     private String password;
+    
+    @ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name = "roleId")
+	private Role role;
 
-    public String getLogin() {
+    public Role getRole() {
+		return role;
+	}
+
+	public void setRole(Role role) {
+		this.role = role;
+	}
+
+	public String getLogin() {
         return login;
     }
 

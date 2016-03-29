@@ -10,10 +10,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+
 @SpringBootApplication
 @RestController
 public class SpringAngularApplication {
-
+	
     @RequestMapping("/resource")
     public Map<String, Object> home() {
         Map<String, Object> model = new HashMap<String, Object>();
@@ -26,6 +27,7 @@ public class SpringAngularApplication {
     public Principal user(Principal user) {
         return user;
     }
+    /***************************/    
 
     public static void main(String[] args) {
         SpringApplication.run(SpringAngularApplication.class, args);

@@ -1,13 +1,14 @@
 package com.example;
 
+import javax.sql.DataSource;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.web.csrf.CsrfFilter;
-import org.springframework.security.web.csrf.CsrfTokenRepository;
-import org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository;
 
 /**
  * Created by Krystian on 2016-03-26.
@@ -15,21 +16,28 @@ import org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository;
 @Configuration
 @Order(SecurityProperties.ACCESS_OVERRIDE_ORDER)
 class SecurityConfiguration extends WebSecurityConfigurerAdapter {
+	
+	@Autowired
+	DataSource dataSource;
+	
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
-                .httpBasic().and()
                 .authorizeRequests()
-                .antMatchers("/index.html", "/home.html", "/login.html", "/", "/webjars/**", "/login").permitAll().anyRequest()
+                .antMatchers("/index.html", "/home.html", "/login.html", "/", "/webjars/**", "/login", "/users").permitAll().anyRequest()
                 .authenticated()
                 .and().logout().logoutSuccessUrl("/")
-                .and().addFilterAfter(new CsrfHeaderFilter(), CsrfFilter.class)
-                .csrf().csrfTokenRepository(csrfTokenRepository());
+                .and().csrf().disable();
+                /*.and().addFilterAfter(new CsrfHeaderFilter(), CsrfFilter.class)
+                .csrf().csrfTokenRepository(csrfTokenRepository());*/
+    }
+    
+    @Override
+    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+    	auth.jdbcAuthentication().dataSource(dataSource)
+    		.usersByUsernameQuery("select login, password, true from user where login=?")
+    		.authoritiesByUsernameQuery(
+    				"select user.login, role.roleName from user, role where user.login=? and user.roleId=role.roleId");
     }
 
-    private CsrfTokenRepository csrfTokenRepository() {
-        HttpSessionCsrfTokenRepository repository = new HttpSessionCsrfTokenRepository();
-        repository.setHeaderName("X-XSRF-TOKEN");
-        return repository;
-    }
 }
