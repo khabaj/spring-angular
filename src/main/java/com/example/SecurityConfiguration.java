@@ -22,22 +22,25 @@ class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 	
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http
+        http.httpBasic()
+        		.and()
                 .authorizeRequests()
-                .antMatchers("/index.html", "/home.html", "/login.html", "/", "/webjars/**", "/login", "/users").permitAll().anyRequest()
-                .authenticated()
+                .antMatchers("/index.html", "/home.html", "/login.html", "/", "/webjars/**", "/login", "/h2-console/**").permitAll()
+                .anyRequest().authenticated()
                 .and().logout().logoutSuccessUrl("/")
                 .and().csrf().disable();
                 /*.and().addFilterAfter(new CsrfHeaderFilter(), CsrfFilter.class)
                 .csrf().csrfTokenRepository(csrfTokenRepository());*/
+        
+        http.headers().frameOptions().disable();
     }
     
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
     	auth.jdbcAuthentication().dataSource(dataSource)
-    		.usersByUsernameQuery("select login, password, true from user where login=?")
+    		.usersByUsernameQuery("select login, password, 'true' from user where login=?")
     		.authoritiesByUsernameQuery(
-    				"select user.login, role.roleName from user, role where user.login=? and user.roleId=role.roleId");
+    				"select user.login, role.role_name from user, role where user.login=? and user.role_id=role.role_id");
     }
 
 }
